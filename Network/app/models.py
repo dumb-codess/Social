@@ -12,7 +12,8 @@ class post(models.Model):
     content=models.TextField()
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     created= models.DateTimeField(default=django.utils.timezone.now,auto_created=django.utils.timezone.now)
-
+    class Meta:
+        ordering = ['-created']
     def likedCount(self):
         return self.likes.count()
     def __str__(self):

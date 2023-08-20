@@ -20,7 +20,7 @@ def home(request):
             return redirect('login')
     else:
         allCom=Comment.objects.all()
-        allPost=post.objects.all()
+        allPost=post.objects.all().order_by('-created')
         paginator=Paginator(allPost,2)
         page_number=request.GET.get('page')
         finalPost = paginator.get_page(page_number)  # return totalpost in one page with page number and some other function
