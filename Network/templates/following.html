@@ -1,0 +1,65 @@
+{%extends 'main.html'%}
+{%load static%}
+{%block content%}
+<div class="border border-1 p-3">
+    {% for post in posts %}
+    <div class="border border-1 p-3">
+    <a href="{%url 'profile' post.author.id%}" class="text-decoration-none"><span ><h5 class="fw-semibold">{{post.author}}</h5></span></a>
+    {%if post.author == request.user %}
+    <a href="" class="text-decoration-none">Edit</a>
+    {%else%}
+    <div></div>
+    {%endif%}
+    <section class="">
+        {{post.content}}
+    </section>
+    <section>
+        {{post.created}}
+    </section>
+    {%for comment in allCom%}
+    <div class="border border-1 p-3">
+        {%if comment.post.id == post.id%}
+        <div class="border border-1 p-3">{{comment.text}} </div><small>Commented by :-{{comment.author}}</small>
+        {%endif%}
+    </div>
+    {%endfor%}
+    <form action="{% url 'likePost' post.id%}" method="POST" id="my-form">
+        {%csrf_token%}
+        <button class="btn m-0 pt-0 pl-pr-0 bg-transparent" type="submit" name="postId" value="{{post.id}}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-heart" viewBox="0 0 16 16">
+                <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+            </svg>
+        </button>
+        <i class="bi bi-heart">{{post.likes.count}}</i>
+    </form>
+    <form action="{%url 'comment' post.id%}" method="POST">
+        {%csrf_token%}
+        <div class="form-floating">
+            <textarea class="form-control mb-2" placeholder="Post Something" id="floatingTextarea" name="comment"></textarea>
+            <button type="submit" class="btn btn-primary">Comment</button>
+        </div>
+        </form> 
+    </div>
+    {%endfor%}
+    <nav aria-label="...">
+        <ul class="pagination">
+        {%if allPost.has_previous%}
+          <li class="page-item ">
+            <a class="page-link" href="?page={{allPost.has_previous_page_number}}" tabindex="-1">Previous</a>
+          </li>
+        {%endif%}
+          {%for n in totalpagelist%}
+          <li class="page-item ">
+            <a class="page-link" href="?page={{n}}">{{n}} <span class="sr-only"></span></a>
+          </li>
+          {%endfor%}
+          {%if allPost.has_next%}
+          <li class="page-item ">
+            <a class="page-link" href="?page={{allPost.next_page_number}}" tabindex="-1">Next</a>
+          </li>
+          {%endif%}
+        </ul>
+      </nav>
+    
+</div>
+{%endblock%}
