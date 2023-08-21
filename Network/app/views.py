@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth.models import User
 from .models import post,profile,Comment
 from .form import UserForm
@@ -9,11 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 
 def home(request):
-    if request.method=="POST" :
+    if request.method=="POST":
         if request.user.is_authenticated:
             post.objects.create(
                 author=request.user,
-                content=request.POST.get("Post")
+                content=request.POST.get('Post')
             )
             return redirect('home')
         else:
@@ -41,7 +41,6 @@ def likePost(request,pk):
                 posts.likes.remove(request.user)
             else:
                 posts.likes.add(request.user)
-     
             return redirect('home')
         else:
             return redirect('login')
