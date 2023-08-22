@@ -1,16 +1,20 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse,JsonResponse
 from django.contrib.auth.models import User
 from .models import post,profile,Comment
 from .form import UserForm
+import logging
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-
+from django.urls import reverse
+from django.contrib.auth.hashers import make_password
+from django.views.decorators.csrf import csrf_exempt
 def home(request):
     if request.method=="POST":
         if request.user.is_authenticated:
+            print("hello")
             post.objects.create(
                 author=request.user,
                 content=request.POST.get('Post')
@@ -32,20 +36,32 @@ def home(request):
             'allCom':allCom
         }
         return render(request,'home.html',context)
-
-def likePost(request,pk):
+    
+@login_required(login_url='/login')
+@csrf_exempt
+def like(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
-            posts= get_object_or_404(post,id=request.POST.get('postId'))
-            if posts.likes.filter(id=request.user.id).exists():
-                posts.likes.remove(request.user)
-            else:
+        post_id = request.POST.get('id')
+        is_liked = request.POST.get('is_liked')
+        try:
+            posts = get_object_or_404(post, id=post_id)
+            if is_liked == 'no':
                 posts.likes.add(request.user)
-            return redirect('home')
-        else:
-            return redirect('login')
-    else:
-        return render(request,'home.html')
+                is_liked = 'yes'
+            elif is_liked == 'yes':
+                posts.likes.remove(request.user)
+                is_liked = 'no'
+            # posts.save()
+            print("hello")
+            return JsonResponse({'like_count': post.likes.through.objects.count(), 'is_liked': is_liked, "status": 201})
+        except:
+            logger = logging.getLogger(__name__)
+            print("hello2")
+            logger.exception("An exception occurred:")
+            return JsonResponse({'error': "Post not founds", "status": 404})
+    return JsonResponse({}, status=400)
+
+
             
 def login_view(request):
     page='login'
@@ -76,25 +92,24 @@ def logoutUser(request):
 
 def register(request):
     page = 'register'
-    form = UserForm()
     if request.method == "POST":
-        form=UserForm(request.POST)
-        if form.is_valid():
-            user=form.save()
-            profile.objects.create(
-                user=user
-            )
-            login(request, user)
-            return redirect('home')
+        username=request.POST.get('username')
+        email=request.POST.get('email')
+        password=request.POST.get('password')
+        user=User.objects.create(
+            username=username,
+            email=email,
+            password=make_password(password)
+        )
+        login(request, user)
+        return redirect('home')
     context={
-        'form':form,
         'page':page
 
     }
     return render(request,'login.html',context)
 def profileView(request,pk):
     human=profile.objects.get(id=pk)
-    print(pk)
     posts= post.objects.filter(author= human.user)
     context={
         'human':human,
@@ -135,14 +150,20 @@ def following(request):
     return render(request,'following.html',context)
 
 @login_required(login_url='/login')
-def edit(request,pk):
-    selectPost=post.objects.filter(id=pk)
-    if request.method =="POST":
-        res=request.POST.get("Post")
-        selectPost.update(content=res)
-        return redirect('home')
-    else:
-        return render(request,'edit.html')
+def edit(request):
+    if request.method == "POST":
+        post_id = request.POST.get('id')
+        new_post = request.POST.get('post')
+        try:
+            posts = post.objects.get(id=post_id)
+            if posts.author == request.user:
+                posts.text = new_post.strip()
+                posts.save()
+                return JsonResponse({}, status=201)
+        except:
+            return JsonResponse({}, status=404)
+
+    return JsonResponse({}, status=400)
 
 @login_required(login_url='/login')
 def commentHandle(request,pk):

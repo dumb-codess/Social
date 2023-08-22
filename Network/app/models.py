@@ -2,7 +2,8 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 import django.utils.timezone
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -41,3 +42,14 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post}"
+    
+
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if created and instance.is_superuser:
+        profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_profile(sender, instance, **kwargs):
+    if instance.is_superuser:
+        instance.profile.save()

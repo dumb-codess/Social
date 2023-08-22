@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app.apps.AppConfig'
+    'app.apps.AppConfig',
+    'corsheaders',
+
 ]
 
 MIDDLEWARE = [
@@ -48,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'Network.urls'
@@ -112,6 +115,8 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
 
 
@@ -133,3 +138,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR/'media'
 
 LOGOUT_REDIRECT_URL = "home"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",  # Example: Your frontend's URL
+    # ...
+]
