@@ -96,12 +96,15 @@ def register(request):
         username=request.POST.get('username')
         email=request.POST.get('email')
         password=request.POST.get('password')
-        user=User.objects.create(
+        login_user=User.objects.create(
             username=username,
             email=email,
             password=make_password(password)
         )
-        login(request, user)
+        profile.objects.create(
+            user = login_user,
+        )
+        login(request, login_user)
         return redirect('home')
     context={
         'page':page
